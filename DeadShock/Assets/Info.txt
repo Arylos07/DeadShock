@@ -1,0 +1,9 @@
+Project setup by Michael "Arylos" Cox. Unity 2018.1.0p2
+
+Libs:
+Steamworks SDK (disable)
+TGS Punishment (disable)
+TGS PowerPhysics
+Fungus (possible addition)
+
+TGS assets provided by Templarius Games Studios LLC; require proper branding.
