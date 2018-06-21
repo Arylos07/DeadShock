@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿//Written by Michael "Arylos" Cox
+
+using UnityEngine;
 using System.Collections;
 
 public class DamageStage : MonoBehaviour

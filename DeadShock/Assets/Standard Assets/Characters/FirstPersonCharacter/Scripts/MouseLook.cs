@@ -1,3 +1,5 @@
+//Modified by Michael "Arylos" Cox
+
 using System;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;

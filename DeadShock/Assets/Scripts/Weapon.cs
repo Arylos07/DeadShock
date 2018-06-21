@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿//Written by Michael "Arylos" Cox
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +19,10 @@ public class Weapon : MonoBehaviour
     [Tooltip("location of the gun barrel, where raycasting begins")]
     public Transform gunBarrel;
     public Camera playerCamera;
+    [Tooltip("Mesh renderer of object")]
+    public MeshRenderer weaponMesh;
+    [Tooltip("Reticule on-screen")]
+    public GameObject reticule;
 
     //This value is used to show a raycast line after the gun fires to show the bullet location. Do not change this value;
     private WaitForSeconds shotDuration = new WaitForSeconds(.07f);
@@ -35,7 +41,7 @@ public class Weapon : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetButton("Fire1") && Time.time > nextFire)
+        if (Input.GetButton("Fire1") || Input.GetAxisRaw("Fire1") > 0 && Time.time > nextFire)
         {
             nextFire = Time.time + fireRate;
             StartCoroutine(ShotEffect());
