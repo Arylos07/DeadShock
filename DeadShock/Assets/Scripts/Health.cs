@@ -52,7 +52,7 @@ public class HealthEditor : Editor
             if (script.isPlayer)
             {
                 script.healthBar = (Image)EditorGUILayout.ObjectField("Health bar:", script.healthBar, typeof(Image), true);
-                script.currentHealth = EditorGUILayout.IntSlider("DebugHealth:", script.currentHealth, 1, script.maxHealth);
+                script.currentHealth = EditorGUILayout.IntSlider("DebugHealth:", script.currentHealth, 0, script.maxHealth);
             }
         }
     }

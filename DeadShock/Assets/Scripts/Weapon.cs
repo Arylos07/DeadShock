@@ -10,6 +10,15 @@ public class Weapon : MonoBehaviour
 {
     [Tooltip("Damage per attack for this weapon")]
     public int gunDamage = 1;
+    public Ammo.AmmoType ammoType;
+    [Tooltip("Whether or not the weapon is automatic (can be fired by only holding down 'fire')")]
+    public bool isAuto;
+    [Tooltip("Time delay during reload")]
+    public float reloadDelay;
+    [Tooltip("Currently in mag")]
+    public int inMag;
+    [Tooltip("Mag size")]
+    public int magSize;
     [Tooltip("Shots per second")]
     public float fireRate = 0.25f;
     [Tooltip("Range of the weapon")]
@@ -23,6 +32,8 @@ public class Weapon : MonoBehaviour
     public MeshRenderer weaponMesh;
     [Tooltip("Reticule on-screen")]
     public GameObject reticule;
+    public bool canFire;
+    public WeaponSlot slot;
 
     //This value is used to show a raycast line after the gun fires to show the bullet location. Do not change this value;
     private WaitForSeconds shotDuration = new WaitForSeconds(.07f);
@@ -41,40 +52,125 @@ public class Weapon : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetButton("Fire1") || Input.GetAxisRaw("Fire1") > 0 && Time.time > nextFire)
+        if(inMag != 0)
         {
-            nextFire = Time.time + fireRate;
-            StartCoroutine(ShotEffect());
+            canFire = true;
+        }
+        else if (inMag == 0)
+        {
+            canFire = false;
+        }
 
-            Vector3 rayOrigin = playerCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
-            laserLine.SetPosition(0, gunBarrel.position);
+        if(Input.GetButtonDown("Reload") && inMag != magSize)
+        {
+            Invoke("Reload", reloadDelay);
+        }
 
-            if (Physics.Raycast(rayOrigin, playerCamera.transform.forward, out hit, range))
+        if(isAuto == true && canFire == true)
+        {
+            if (Input.GetButton("Fire1") || Input.GetAxisRaw("Fire1") > 0)
             {
-                laserLine.SetPosition(1, hit.point);
-                DamageStage health = hit.collider.GetComponent<DamageStage>();
-                if(health != null)
+                if (Time.time > nextFire)
                 {
-                    health.Damage(gunDamage);
-                }
-                if (hit.rigidbody != null)
-                {
-                    hit.rigidbody.AddForce(-hit.normal * hitForce);
+                    nextFire = Time.time + fireRate;
+                    StartCoroutine(ShotEffect());
+
+                    Vector3 rayOrigin = playerCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
+                    RaycastHit hit;
+                    laserLine.SetPosition(0, gunBarrel.position);
+
+                    if (Physics.Raycast(rayOrigin, playerCamera.transform.forward, out hit, range))
+                    {
+                        laserLine.SetPosition(1, hit.point);
+                        DamageStage health = hit.collider.GetComponent<DamageStage>();
+                        if (health != null)
+                        {
+                            health.Damage(gunDamage);
+                        }
+                        if (hit.rigidbody != null)
+                        {
+                            hit.rigidbody.AddForce(-hit.normal * hitForce);
+                        }
+                    }
+                    else
+                    {
+                        laserLine.SetPosition(1, rayOrigin + (playerCamera.transform.forward * range));
+                    }
                 }
             }
-            else
+        }
+        else if(isAuto == false && canFire == true)
+        {
+            if (Input.GetButtonDown("Fire1") || Input.GetAxisRaw("Fire1") > 0)
             {
-                laserLine.SetPosition(1, rayOrigin + (playerCamera.transform.forward * range));
+                canFire = false;
+                StartCoroutine(ShotEffect());
+
+                Vector3 rayOrigin = playerCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
+                RaycastHit hit;
+                laserLine.SetPosition(0, gunBarrel.position);
+
+                if (Physics.Raycast(rayOrigin, playerCamera.transform.forward, out hit, range))
+                {
+                    laserLine.SetPosition(1, hit.point);
+                    DamageStage health = hit.collider.GetComponent<DamageStage>();
+                    if (health != null)
+                    {
+                        health.Damage(gunDamage);
+                    }
+                    if (hit.rigidbody != null)
+                    {
+                        hit.rigidbody.AddForce(-hit.normal * hitForce);
+                    }
+                }
+                else
+                {
+                    laserLine.SetPosition(1, rayOrigin + (playerCamera.transform.forward * range));
+                }
             }
+            if(canFire == false && inMag != 0)
+            {
+                if(Input.GetButtonUp("Fire1") || Input.GetAxisRaw("Fire1") == 0)
+                {
+                    canFire = true;
+                }
+            }
+            
         }
 	}
 
     private IEnumerator ShotEffect()
     {
+        inMag--;
         laserLine.enabled = true;
         weaponAudio.Play();
         yield return shotDuration;
         laserLine.enabled = false;
+        if (inMag == 0)
+        {
+            canFire = false;
+            yield return new WaitForSeconds(reloadDelay);
+            Reload();
+        }
+    }
+
+    public void Reload()
+    {
+        if (magSize < slot.carriedAmmo)
+        {
+            inMag = magSize;
+            slot.carriedAmmo -= magSize;
+            canFire = true;
+        }
+        else if (magSize > slot.carriedAmmo && slot.carriedAmmo != 0)
+        {
+            inMag = slot.carriedAmmo;
+            slot.carriedAmmo -= inMag;
+            canFire = true;
+        }
+        else
+        {
+            canFire = false;
+        }
     }
 }

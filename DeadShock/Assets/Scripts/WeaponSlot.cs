@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.Utility;
+using UnityEngine.UI;
 
 public class WeaponSlot : MonoBehaviour
 {
+    [Tooltip("Name of this weapon")]
+    public string weaponName;
     [Tooltip("Animator of weaponSlot")]
     public Animator weaponAnimator;
     [Tooltip("Animator of FOV")]
@@ -16,9 +19,67 @@ public class WeaponSlot : MonoBehaviour
     public GameObject ScopeOverlay;
     [Tooltip("Do not modify; used for detecting current weapon")]
     public Weapon weapon;
+    [Tooltip("Weapon name text")]
+    public Text weaponNameText;
+    [Tooltip("Text object of ammunition")]
+    public Text ammoText;
+    private int weaponClip = 0;
+    [HideInInspector] public int carriedAmmo = 0;
+
+    [Tooltip("Amount of 9mm ammo carried")]
+    public int ammo9mm = 0;
+    public GameObject AmmoEmpty;
+
+    public void ChangeWeapon()
+    {
+        if(weapon.ammoType == Ammo.AmmoType.ammo9mm)
+        {
+            ammo9mm = carriedAmmo;
+        }
+
+        //change weapons
+
+        if(weapon.ammoType == Ammo.AmmoType.ammo022mm)
+        {
+            carriedAmmo = ammo9mm;
+        }
+    }
+
+    private void SetWeapon()
+    {
+        if (weapon.ammoType == Ammo.AmmoType.ammo022mm)
+        {
+            carriedAmmo = ammo9mm;
+        }
+    }
+
+    private void Start()
+    {
+        SetWeapon();
+    }
 
     public void Update()
     {
+
+        if (weapon.ammoType == Ammo.AmmoType.ammo9mm)
+        {
+            carriedAmmo = ammo9mm;
+            if(carriedAmmo == 0)
+            {
+                AmmoEmpty.SetActive(true);
+            }
+            else if(carriedAmmo != 0 && AmmoEmpty.activeSelf == true)
+            {
+                AmmoEmpty.SetActive(false);
+            }
+        }
+
+        weaponName = weapon.name;
+        weaponClip = weapon.inMag;
+
+        weaponNameText.text = weaponName;
+        ammoText.text = weaponClip.ToString() + "/" + carriedAmmo.ToString();
+
         if (Input.GetButton("ADS") || Input.GetAxisRaw("ADS") > 0)
         {
             if (ADSenabled == false)
